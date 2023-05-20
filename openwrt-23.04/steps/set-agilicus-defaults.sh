@@ -13,19 +13,31 @@ mkdir -p etc/uci-defaults
 mkdir -p www/luci-static/openwrt2020
 echo "Create default config in $(pwd)/etc/uci-defaults/99-agilicus-setup"
 cat << "EOF" > etc/uci-defaults/99-agilicus-setup
+exec > /tmp/setup.log 2>&1
+set -x
 # uci set dhcp.wan.ignore=1
 uci set dhcp.lan.ignore='1'
 uci set system.@system[0].hostname='agilicus-nanopi-r5'
 uci set dockerd.globals.data_root='/var/docker/'
 echo -e "n\np\n3\n4210690\n\nw\n" | fdisk /dev/mmcblk1
-mkfs.ext4 -L var /dev/mmcblk1p3
-echo /dev/mmcblk1p3 /var ext4 errors=remount-ro 0 1 >> /etc/fstab
+tar cvf /tmp/var.tar /var
 eval $(blkid -o export /dev/mmcblk1p3)
+if [ "$TYPE" != "ext4" ]
+then
+    mkfs.ext4 -L var /dev/mmcblk1p3
+    eval $(blkid -o export /dev/mmcblk1p3)
+fi
+echo UUID=$UUID /var ext4 errors=remount-ro 0 1 >> /etc/fstab
 uci add fstab mount
-uci set fstab.@mount[3].enabled='1'
-uci set fstab.@mount[3].uuid=$UUID
-uci set fstab.@mount[3].target='/var'
+uci set fstab.@mount[-1].enabled=1
+uci set fstab.@mount[-1].uuid=$UUID
+uci set fstab.@mount[-1].target=/var
+uci set fstab.@mount[-1].fstype=ext4
+uci set fstab.@mount[-1].options='rw,noatime,nodiratime'
 uci commit
+mount /var
+cd /
+tar xvf /tmp/var.tar
 sed -i -e 's?00A3E1?0057b8?g' -e 's?002B49?bbbbbb?g' /www/luci-static/openwrt2020/cascade.css
 echo agilicus:x:1000: >> /etc/group
 
@@ -43,7 +55,7 @@ echo "-----------------------------------------"
 echo "  DONE INITIAL SETUP. REBOOT.            "
 echo "-----------------------------------------"
 echo ""
-reboot
+# reboot
 
 EOF
 chmod a+rx etc/uci-defaults/99-agilicus-setup
