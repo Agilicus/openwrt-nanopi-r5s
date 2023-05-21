@@ -17,6 +17,7 @@ exec > /tmp/setup.log 2>&1
 set -x
 # uci set dhcp.wan.ignore=1
 uci set dhcp.lan.ignore='1'
+uci set network.lan.ipaddr=192.168.2.1
 uci set system.@system[0].hostname='agilicus-nanopi-r5'
 uci set dockerd.globals.data_root='/var/docker/'
 echo -e "n\np\n3\n4210690\n\nw\n" | fdisk /dev/mmcblk1
@@ -52,8 +53,11 @@ fi
 sed -i -e 's?00A3E1?0057b8?g' -e 's?002B49?bbbbbb?g' /www/luci-static/openwrt2020/cascade.css
 grep -q agilicus /etc/group || echo agilicus:x:1000: >> /etc/group
 
-echo iptables -A INPUT -m owner --gid 1000 -j ACCEPT > /etc/rc.local
+echo '#!/bin/sh' > /etc/rc.local
 echo iptables -A OUTPUT -m owner --gid 1000 -j ACCEPT >> /etc/rc.local
+# echo iptables -A INPUT -m owner --gid 1000 -j ACCEPT >> /etc/rc.local
+echo "(sleep 10; htpdate -t -s https://api.agilicus.com/v1/time) &" >> /etc/rc.local
+chmod +x /etc/rc.local
 
 sed -i -e 's?/bin/ash?/bin/bash?' /etc/passwd
 
