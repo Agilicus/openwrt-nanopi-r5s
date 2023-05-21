@@ -18,6 +18,9 @@ git clone https://github.com/stangri/source.openwrt.melmac.net stangri_repo
 cd openwrt
 ./scripts/feeds update -a
 
+rm -rf feeds/packages/net/htpdate
+tar xvf $ROOTDIR/openwrt-23.04/htpdate.tar
+
 # replace pbr packages
 rm -rf feeds/packages/net/pbr/
 cp -R ../stangri_repo/pbr feeds/packages/net/
