@@ -38,8 +38,19 @@ uci commit
 mount /var
 cd /
 tar xvf /tmp/var.tar
+rm -f /tmp/var.tar
+if [ ! -h /opt ]
+then
+    cd /
+    tar cvf /tmp/opt.tar /opt
+    rm -rf /opt
+    ln -s /var /opt
+    tar xvf /tmp/opt.tar
+    rm -f /tmp/opt.tar
+fi
+
 sed -i -e 's?00A3E1?0057b8?g' -e 's?002B49?bbbbbb?g' /www/luci-static/openwrt2020/cascade.css
-echo agilicus:x:1000: >> /etc/group
+grep -q agilicus /etc/group || echo agilicus:x:1000: >> /etc/group
 
 echo iptables -A INPUT -m owner --gid 1000 -j ACCEPT > /etc/rc.local
 echo iptables -A OUTPUT -m owner --gid 1000 -j ACCEPT >> /etc/rc.local
@@ -50,6 +61,13 @@ if [ -f /etc/init.d/agilicus-agent ]
 then
     sed -i -e '/procd_set_param group/d' -e 's?procd_close_instance?procd_set_param group agilicus\n        procd_close_instance?' /etc/init.d/agilicus-agent
 fi
+
+echo "/etc/agilicus" > /etc/sysupgrade.conf
+echo "/usr/bin/agilicus-agent-wrapper.sh" >> /etc/sysupgrade.conf
+echo "/usr/bin/agilicus-agent" >> /etc/sysupgrade.conf
+echo "/etc/init.d/agilicus-agent" >> /etc/sysupgrade.conf
+echo "/etc/rc.d/S50agilicus-agent" >> /etc/sysupgrade.conf
+echo "/etc/rc.d/K50agilicus-agent" >> /etc/sysupgrade.conf
 echo ""
 echo "-----------------------------------------"
 echo "  DONE INITIAL SETUP. REBOOT.            "
