@@ -16,6 +16,19 @@ OPENWRT_FOLDER=openwrt-fresh-23.04
 #git clone -b openwrt-23.04 --single-branch https://git.openwrt.org/openwrt/openwrt.git $OPENWRT_FOLDER
 git clone --single-branch https://git.openwrt.org/openwrt/openwrt.git $OPENWRT_FOLDER
 
+cat << EOF > $OPENWRT_FOLDER/package/base-files/files/etc/banner
+
+  █████╗  ██████╗ ██╗██╗     ██╗ ██████╗██╗   ██╗███████╗
+ ██╔══██╗██╔════╝ ██║██║     ██║██╔════╝██║   ██║██╔════╝
+ ███████║██║  ███╗██║██║     ██║██║     ██║   ██║███████╗
+ ██╔══██║██║   ██║██║██║     ██║██║     ██║   ██║╚════██║
+ ██║  ██║╚██████╔╝██║███████╗██║╚██████╗╚██████╔╝███████║
+ ╚═╝  ╚═╝ ╚═════╝ ╚═╝╚══════╝╚═╝ ╚═════╝ ╚═════╝ ╚══════╝
+ --------------------------------------------------------
+ %D %V, %C
+ --------------------------------------------------------
+EOF
+
 cd $OPENWRT_FOLDER
 echo "Current OpenWRT commit"
 git rev-parse HEAD
